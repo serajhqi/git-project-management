@@ -1,0 +1,4 @@
+.env
+tmp/
+pg-data
+pgadmin
