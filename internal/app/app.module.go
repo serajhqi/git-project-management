@@ -1,29 +1,16 @@
 package app
 
 import (
-	"database/sql"
-	"fmt"
-	"git-project-management/config"
 	"git-project-management/internal/activity"
-	"log"
+	"git-project-management/migrations"
 
 	"github.com/danielgtaylor/huma/v2"
-	_ "github.com/lib/pq"
+	"github.com/go-pg/pg/v10"
 )
 
-func Setup(api *huma.API, cfg config.Config) {
-	// init database
+func Setup(api *huma.API, db *pg.DB) {
 
-	db, err := sql.Open("postgres", cfg.CONNECTION_STRING)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Successfully connected to PostgreSQL!")
+	migrations.Migrate(db)
 
 	activity.Setup(api, db)
 }

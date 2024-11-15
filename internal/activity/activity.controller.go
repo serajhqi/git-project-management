@@ -2,6 +2,7 @@ package activity
 
 import (
 	"context"
+	"git-project-management/migrations"
 
 	"gitea.com/logicamp/lc"
 )
@@ -18,11 +19,12 @@ func NewController(repo *Repo) *Controller {
 
 func (c *Controller) create(_ context.Context, req *ActivityCreateRequest) (*ActivityCreateResponse, error) {
 
-	activityDto := ActivityDto{
-		Title:       req.Body.Title,
-		Description: req.Body.Description,
-		TaskId:      req.TaskId,
-		TimeLog:     req.Body.TimeLog,
+	activityDto := &migrations.ActivityLog{
+		ActionType:       "epic",
+		UserID:           1,
+		Details:          "sth",
+		AssociatedEntity: "task",
+		EntityID:         1,
 	}
 
 	id, err := c.repo.create(activityDto)
