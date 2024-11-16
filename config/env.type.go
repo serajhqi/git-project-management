@@ -1,7 +1,7 @@
 package config
 
 type Config struct {
-	PORT        string `env:"PORT" default:"3000"`
+	PORT        string `env:"PORT" default:"4000"`
 	BASE_URL    string `env:"BASE_URL" default:""`
 	PG_HOST     string `env:"PG_HOST" default:"localhost:5432"`
 	PG_USER     string `env:"PG_USER" default:"postgres"`

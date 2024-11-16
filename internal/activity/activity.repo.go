@@ -16,7 +16,7 @@ func NewRepo(db *pg.DB) *Repo {
 	}
 }
 
-func (r *Repo) create(payload *migrations.ActivityLog) (*int, error) {
+func (r *Repo) create(payload *migrations.Activity) (*int, error) {
 
 	result, err := r.db.Model(payload).Insert()
 	if err != nil {
