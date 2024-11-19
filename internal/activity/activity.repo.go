@@ -1,8 +1,6 @@
 package activity
 
 import (
-	"git-project-management/migrations"
-
 	"github.com/go-pg/pg/v10"
 )
 
@@ -16,7 +14,7 @@ func NewRepo(db *pg.DB) *Repo {
 	}
 }
 
-func (r *Repo) create(payload *migrations.Activity) (*int, error) {
+func (r *Repo) create(payload *Activity) (*int, error) {
 
 	result, err := r.db.Model(payload).Insert()
 	if err != nil {

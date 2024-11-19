@@ -1,4 +1,4 @@
-package app
+package internal
 
 import (
 	"git-project-management/internal/activity"
