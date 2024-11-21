@@ -39,8 +39,9 @@ type ActivityDto struct {
 }
 
 type GetAllRequest struct {
-	Limit  int `query:"limit"`
-	Offset int `query:"offset"`
+	Limit  int   `query:"limit"`
+	Offset int   `query:"offset"`
+	TaskId int64 `path:"task_id"`
 }
 type GetAllResponse struct {
 	Body []ActivityDto

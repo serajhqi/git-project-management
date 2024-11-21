@@ -33,8 +33,8 @@ func (r *Repo) GetByID(id int64) (*ProjectEntity, error) {
 	return project, nil
 }
 
-func (r *Repo) getAll(limit, offset int) ([]ProjectDto, error) {
-	var projects []ProjectDto
+func (r *Repo) getAll(limit, offset int) ([]ProjectEntity, error) {
+	var projects []ProjectEntity
 
 	err := r.db.Model(&projects).Limit(limit).Offset(offset).Select()
 

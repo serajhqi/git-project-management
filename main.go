@@ -12,11 +12,20 @@ import (
 	humaFiber "github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/go-pg/pg/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
 	config, _ := lc.GetConfig[config.Config](&config.Config{})
 	fiberApp := fiber.New()
+	fiberApp.Use(cors.New())
+
+	// Or extend your config for customization
+	fiberApp.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
+
 	humaConfig := huma.DefaultConfig("Git Project Management", "1.0.0")
 	humaConfig.Servers = []*huma.Server{{URL: config.BASE_URL}}
 	humaConfig.Components.SecuritySchemes = map[string]*huma.SecurityScheme{

@@ -31,8 +31,24 @@ func (c *Controller) getAll(_ context.Context, req *GetAllRequest) (*GetAllRespo
 	if err != nil {
 		return nil, lc.SendInternalErrorResponse(err, "[activity] get all")
 	}
+	var projectsDTO []ProjectDTO
+	for _, v := range projects {
+		projectsDTO = append(projectsDTO, ToProjectDTO(v))
+	}
 
 	return &GetAllResponse{
-		Body: projects,
+		Body: projectsDTO,
 	}, nil
+}
+
+func ToProjectDTO(model ProjectEntity) ProjectDTO {
+	return ProjectDTO{
+		ID:          model.ID,
+		Name:        model.Name,
+		Description: model.Description,
+		StartDate:   model.StartDate,
+		EndDate:     model.EndDate,
+		CreatedBy:   model.CreatedBy,
+		CreatedAt:   model.CreatedAt,
+	}
 }
