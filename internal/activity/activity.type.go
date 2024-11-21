@@ -34,6 +34,7 @@ type ActivityDto struct {
 	Title       string      `json:"title"`
 	Description string      `json:"description"`
 	Duration    string      `json:"duration"`
+	CreatedBy   int64       `json:"created_by"`
 	CreateAt    time.Ticker `json:"created_at"`
 }
 
