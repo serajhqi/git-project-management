@@ -2,7 +2,7 @@ package project
 
 import "time"
 
-type Project struct {
+type ProjectEntity struct {
 	tableName   struct{}  `pg:"project"`
 	ID          int64     `pg:"id,pk"`                    // Unique identifier
 	Name        string    `pg:"name,notnull"`             // Project name
@@ -28,8 +28,8 @@ type ProjectDto struct {
 	// activity count
 }
 type GetAllRequest struct {
-	Limit  int `path:"limit"`
-	Offset int `path:"offset"`
+	Limit  int `query:"limit"`
+	Offset int `query:"offset"`
 }
 
 type GetAllResponse struct {

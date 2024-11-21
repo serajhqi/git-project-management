@@ -5,8 +5,8 @@ import (
 	"git-project-management/internal/notification"
 	"git-project-management/internal/project"
 	"git-project-management/internal/task"
+	"git-project-management/internal/user"
 	"log"
-	"os/user"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
@@ -14,11 +14,11 @@ import (
 
 func Migrate(db *pg.DB) error {
 	models := []interface{}{
-		(*project.Project)(nil),
-		(*task.Task)(nil),
-		(*user.User)(nil),
-		(*notification.Notification)(nil),
-		(*activity.Activity)(nil),
+		(*project.ProjectEntity)(nil),
+		(*task.TaskEntity)(nil),
+		(*user.UserEntity)(nil),
+		(*notification.NotificationEntity)(nil),
+		(*activity.ActivityEntity)(nil),
 	}
 
 	for _, model := range models {

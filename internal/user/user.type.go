@@ -2,7 +2,7 @@ package user
 
 import "time"
 
-type User struct {
+type UserEntity struct {
 	tableName struct{}  `pg:"user"`
 	ID        int64     `pg:"id,pk"`                    // Unique identifier
 	Name      string    `pg:"name,notnull"`             // User's full name

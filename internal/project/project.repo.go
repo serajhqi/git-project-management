@@ -15,14 +15,14 @@ func NewRepo(db *pg.DB) *Repo {
 }
 
 // Create a new project
-func (r *Repo) Create(project *Project) error {
+func (r *Repo) Create(project *ProjectEntity) error {
 	_, err := r.db.Model(project).Insert()
 	return err
 }
 
 // Get a project by ID
-func (r *Repo) GetByID(id int64) (*Project, error) {
-	project := &Project{}
+func (r *Repo) GetByID(id int64) (*ProjectEntity, error) {
+	project := &ProjectEntity{}
 	err := r.db.Model(project).Where("id = ?", id).First()
 	if err != nil {
 		if errors.Is(err, pg.ErrNoRows) {

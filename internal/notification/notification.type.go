@@ -2,7 +2,7 @@ package notification
 
 import "time"
 
-type Notification struct {
+type NotificationEntity struct {
 	tableName  struct{}  `pg:"notification"`
 	ID         int64     `pg:"id,pk"`                    // Unique identifier
 	UserID     int64     `pg:"user_id,notnull"`          // ID of the user receiving the notification
