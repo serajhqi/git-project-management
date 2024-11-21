@@ -2,7 +2,6 @@ package project
 
 import (
 	"errors"
-	"time"
 
 	"github.com/go-pg/pg/v10"
 )
@@ -34,24 +33,14 @@ func (r *Repo) GetByID(id int64) (*Project, error) {
 	return project, nil
 }
 
-// Update a project
-func (r *Repo) Update(project *Project) error {
-	_, err := r.db.Model(project).Where("id = ?", project.ID).Update()
-	return err
-}
+func (r *Repo) getAll(limit, offset int) ([]ProjectDto, error) {
+	var projects []ProjectDto
 
-// Delete a project (soft delete)
-func (r *Repo) Delete(id int64) error {
-	_, err := r.db.Model(&Project{}).
-		Set("deleted_at = ?", time.Now()).
-		Where("id = ?", id).
-		Update()
-	return err
-}
+	err := r.db.Model(&projects).Limit(limit).Offset(offset).Select()
 
-// List all projects (excluding deleted)
-func (r *Repo) List() ([]*Project, error) {
-	var projects []*Project
-	err := r.db.Model(&projects).Where("deleted_at IS NULL").Select()
-	return projects, err
+	if err != nil {
+		return projects, err
+	}
+	return projects, nil
+
 }
