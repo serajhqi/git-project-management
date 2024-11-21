@@ -14,7 +14,7 @@ func NewRepo(db *pg.DB) *Repo {
 	}
 }
 
-func (r *Repo) create(payload *Activity) (*int, error) {
+func (r *Repo) create(payload *ActivityEntity) (*int, error) {
 
 	result, err := r.db.Model(payload).Insert()
 	if err != nil {
@@ -22,4 +22,16 @@ func (r *Repo) create(payload *Activity) (*int, error) {
 	}
 	id := result.RowsReturned()
 	return &id, nil
+}
+
+func (r *Repo) getAll(limit, offset int) ([]ActivityDto, error) {
+	var activities []ActivityDto
+
+	err := r.db.Model(&activities).Limit(limit).Offset(offset).Select()
+
+	if err != nil {
+		return activities, err
+	}
+	return activities, nil
+
 }
