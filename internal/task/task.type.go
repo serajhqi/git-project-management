@@ -18,7 +18,7 @@ type TaskEntity struct {
 }
 
 // Get All ---
-type TaskDto struct {
+type TaskDTO struct {
 	ID          int64     `json:"id"`
 	ParentID    int64     `json:"parent_id,omitempty"`
 	Title       string    `json:"title"`
@@ -38,5 +38,5 @@ type GetAllRequest struct {
 	ProjectId int64 `path:"project_id"`
 }
 type GetAllResponse struct {
-	Body []TaskDto
+	Body []TaskDTO
 }

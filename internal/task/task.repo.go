@@ -14,8 +14,8 @@ func NewRepo(db *pg.DB) *Repo {
 	}
 }
 
-func (r *Repo) getAll(projectId int64, limit, offset int) ([]TaskDto, error) {
-	var tasks []TaskDto
+func (r *Repo) getAll(projectId int64, limit, offset int) ([]TaskDTO, error) {
+	var tasks []TaskDTO
 
 	err := r.db.Model(&tasks).Where("project_id = ?", projectId).Limit(limit).Offset(offset).Select()
 
