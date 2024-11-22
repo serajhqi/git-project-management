@@ -1,6 +1,9 @@
 package task
 
-import "time"
+import (
+	"git-project-management/internal/activity"
+	"time"
+)
 
 type TaskEntity struct {
 	tableName   struct{}  `pg:"task"`
@@ -32,11 +35,21 @@ type TaskDTO struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
-type GetAllRequest struct {
-	Limit     int   `query:"limit"`
-	Offset    int   `query:"offset"`
-	ProjectId int64 `path:"project_id"`
+type GetOneRequest struct {
+	Id int64 `path:"id"`
 }
-type GetAllResponse struct {
-	Body []TaskDTO
+
+type GetOneResponse struct {
+	Body TaskDTO
+}
+
+// ---
+
+type GetAllActivitiesRequest struct {
+	Limit  int   `query:"limit"`
+	Offset int   `query:"offset"`
+	TaskId int64 `path:"id"`
+}
+type GetAllActivitiesResponse struct {
+	Body []activity.ActivityDTO
 }

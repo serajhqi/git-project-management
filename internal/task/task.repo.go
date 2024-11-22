@@ -1,6 +1,8 @@
 package task
 
 import (
+	"git-project-management/internal/activity"
+
 	"github.com/go-pg/pg/v10"
 )
 
@@ -14,14 +16,23 @@ func NewRepo(db *pg.DB) *Repo {
 	}
 }
 
-func (r *Repo) getAll(projectId int64, limit, offset int) ([]TaskDTO, error) {
-	var tasks []TaskDTO
+func (r *Repo) getByID(id int64) (*TaskEntity, error) {
+	project := &TaskEntity{}
+	err := r.db.Model(project).Where("id = ?", id).First()
+	if err != nil {
+		return nil, err
+	}
+	return project, nil
+}
 
-	err := r.db.Model(&tasks).Where("project_id = ?", projectId).Limit(limit).Offset(offset).Select()
+func (r *Repo) getAllActivities(taskId int64, limit, offset int) ([]activity.ActivityEntity, error) {
+	var activities []activity.ActivityEntity
+
+	err := r.db.Model(&activities).Where("task_id = ?", taskId).Limit(limit).Offset(offset).Select()
 
 	if err != nil {
-		return tasks, err
+		return activities, err
 	}
-	return tasks, nil
+	return activities, nil
 
 }

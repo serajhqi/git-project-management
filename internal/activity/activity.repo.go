@@ -24,14 +24,11 @@ func (r *Repo) create(payload *ActivityEntity) (*int, error) {
 	return &id, nil
 }
 
-func (r *Repo) getAll(limit, offset int) ([]ActivityDto, error) {
-	var activities []ActivityDto
-
-	err := r.db.Model(&activities).Limit(limit).Offset(offset).Select()
-
+func (r *Repo) getByID(id int64) (*ActivityEntity, error) {
+	project := &ActivityEntity{}
+	err := r.db.Model(project).Where("id = ?", id).First()
 	if err != nil {
-		return activities, err
+		return nil, err
 	}
-	return activities, nil
-
+	return project, nil
 }

@@ -41,23 +41,25 @@ func (c *Controller) create(_ context.Context, req *ActivityCreateRequest) (*Act
 	}, nil
 }
 
-func (c *Controller) getAll(_ context.Context, req *GetAllRequest) (*GetAllResponse, error) {
-	limit := 100
-	offset := 0
-	if req.Limit > 0 {
-		limit = req.Limit
-	}
+func (c *Controller) getOne(_ context.Context, req *GetOneRequest) (*GetOneResponse, error) {
 
-	if req.Offset > 0 {
-		offset = req.Offset
-	}
-
-	activities, err := c.repo.getAll(limit, offset)
+	activity, err := c.repo.getByID(req.Id)
 	if err != nil {
 		return nil, lc.SendInternalErrorResponse(err, "[activity] get all")
 	}
 
-	return &GetAllResponse{
-		Body: activities,
+	return &GetOneResponse{
+		Body: ToActivityDTO(*activity),
 	}, nil
+}
+
+func ToActivityDTO(model ActivityEntity) ActivityDTO {
+	return ActivityDTO{
+		TaskId:      model.ID,
+		Title:       model.Title,
+		Description: model.Description,
+		Duration:    model.Duration,
+		CreatedBy:   model.CreatedBy,
+		CreateAt:    model.CreatedAt,
+	}
 }

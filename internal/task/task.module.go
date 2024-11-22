@@ -12,12 +12,21 @@ func Setup(api *huma.API, db *pg.DB) {
 	controller := NewController(NewRepo(db))
 
 	huma.Register(*api, huma.Operation{
-		OperationID: "get-all-tasks",
+		OperationID: "get-one-task",
 		Method:      http.MethodGet,
-		Path:        "/projects/{project_id}/tasks",
-		Summary:     "all tasks",
+		Path:        "/tasks/{id}",
+		Summary:     "get one task",
 		Description: "",
 		Tags:        []string{"tasks"},
-	}, controller.getAll)
+	}, controller.getOne)
+
+	huma.Register(*api, huma.Operation{
+		OperationID: "get-all-task-activities",
+		Method:      http.MethodGet,
+		Path:        "/tasks/{id}/activities",
+		Summary:     "get all task activities",
+		Description: "",
+		Tags:        []string{"tasks"},
+	}, controller.getAllActivities)
 
 }

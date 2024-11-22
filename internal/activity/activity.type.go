@@ -29,13 +29,14 @@ type ActivityCreateResponse struct {
 }
 
 // Get ---
-type ActivityDto struct {
-	TaskId      int64       `json:"task_id"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	Duration    string      `json:"duration"`
-	CreatedBy   int64       `json:"created_by"`
-	CreateAt    time.Ticker `json:"created_at"`
+type ActivityDTO struct {
+	ID          int64     `json:"id,pk"`
+	TaskId      int64     `json:"task_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Duration    *int      `json:"duration"`
+	CreatedBy   int64     `json:"created_by"`
+	CreateAt    time.Time `json:"created_at"`
 }
 
 type GetAllRequest struct {
@@ -44,5 +45,14 @@ type GetAllRequest struct {
 	TaskId int64 `path:"task_id"`
 }
 type GetAllResponse struct {
-	Body []ActivityDto
+	Body []ActivityDTO
+}
+
+// ---
+type GetOneRequest struct {
+	Id int64 `path:"id"`
+}
+
+type GetOneResponse struct {
+	Body ActivityDTO
 }

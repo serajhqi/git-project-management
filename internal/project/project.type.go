@@ -1,6 +1,9 @@
 package project
 
-import "time"
+import (
+	"git-project-management/internal/task"
+	"time"
+)
 
 type ProjectEntity struct {
 	tableName   struct{}  `pg:"project"`
@@ -34,4 +37,24 @@ type GetAllRequest struct {
 
 type GetAllResponse struct {
 	Body []ProjectDTO
+}
+
+// ---
+type GetOneRequest struct {
+	Id int64 `path:"id"`
+}
+
+type GetOneResponse struct {
+	Body ProjectDTO
+}
+
+// ---
+
+type GetAllTasksRequest struct {
+	Limit     int   `query:"limit"`
+	Offset    int   `query:"offset"`
+	ProjectId int64 `path:"project_id"`
+}
+type GetAllTasksResponse struct {
+	Body []task.TaskDTO
 }
