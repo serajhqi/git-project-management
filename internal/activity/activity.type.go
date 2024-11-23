@@ -6,6 +6,8 @@ type ActivityEntity struct {
 	tableName   struct{}  `pg:"activity"`
 	ID          int64     `pg:"id,pk"`                    // Unique identifier
 	TaskId      int64     `pg:"task_id,notnull"`          // ID of the associated task
+	CommitHash  string    `pg:"commit_hash"`              // ID of the associated task
+	Branch      string    `pg:"branch"`                   // ID of the associated task
 	Title       string    `pg:"title,notnull"`            // Action performed (e.g., "Worked On sth")
 	Description string    `pg:"description"`              // Optional description of the action
 	Duration    *int      `pg:"duration"`                 // Duration in minutes (optional for non-timelog actions)
@@ -18,13 +20,12 @@ type IdBody struct {
 }
 
 // Create ---
-type CreateActivityDto struct {
-	CommitMessage string `json:"commit_message"`
+type CreateActivityRequest struct {
+	Body struct {
+		CommitMessage string `json:"commit_message"`
+	}
 }
-type ActivityCreateRequest struct {
-	Body CreateActivityDto
-}
-type ActivityCreateResponse struct {
+type CreateActivityResponse struct {
 	Body IdBody
 }
 
@@ -33,6 +34,8 @@ type ActivityDTO struct {
 	ID          int64     `json:"id,pk"`
 	TaskId      int64     `json:"task_id"`
 	Title       string    `json:"title"`
+	CommitHash  string    `json:"commit_hash"`
+	Branch      string    `json:"branch"`
 	Description string    `json:"description"`
 	Duration    *int      `json:"duration"`
 	CreatedBy   int64     `json:"created_by"`

@@ -17,15 +17,15 @@ func Setup(api *huma.API, db *pg.DB) {
 		Path:        "/activities/{id}",
 		Summary:     "one activity",
 		Description: "",
-		Tags:        []string{"activity"},
+		Tags:        []string{"Activity"},
 	}, controller.getOne)
 
 	huma.Register(*api, huma.Operation{
 		OperationID: "add-activity",
 		Method:      http.MethodPost,
-		Path:        "/tasks/{task_id}/activities",
+		Path:        "/activities",
 		Summary:     "add activity",
 		Description: "",
-		Tags:        []string{"activity"},
+		Tags:        []string{"Activity"},
 	}, controller.create)
 }
