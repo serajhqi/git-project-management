@@ -58,3 +58,21 @@ type GetAllTasksRequest struct {
 type GetAllTasksResponse struct {
 	Body []task.TaskDTO
 }
+
+// ---
+type CreateTaskRequest struct {
+	ProjectId int64 `path:"id"`
+	Body      struct {
+		Title       string            `json:"title"`
+		ParentID    int64             `json:"parent_id,omitempty"`
+		AssigneeID  int64             `json:"assignee_id,omitempty"`
+		Description string            `json:"description,omitempty"`
+		Status      task.TaskStatus   `json:"status,omitempty" enum:"open,closed"`
+		Priority    task.TaskPriority `json:"priority,omitempty" enum:"high,medium,low"`
+		DueDate     time.Time         `json:"due_date,omitempty"`
+	}
+}
+
+type CreateTaskResponse struct {
+	Body task.TaskDTO
+}

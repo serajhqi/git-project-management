@@ -2,9 +2,11 @@ package project
 
 import (
 	"context"
+	"errors"
 	"git-project-management/internal/task"
 
 	"gitea.com/logicamp/lc"
+	"github.com/go-pg/pg/v10"
 )
 
 type Controller struct {
@@ -78,6 +80,42 @@ func (c *Controller) getAllTasks(_ context.Context, req *GetAllTasksRequest) (*G
 	return &GetAllTasksResponse{
 		Body: tasksDTO,
 	}, nil
+}
+
+func (c *Controller) addTask(_ context.Context, req *CreateTaskRequest) (*CreateTaskResponse, error) {
+
+	// TODO project_id validation
+	// TODO parent_id validation
+	// TODO assignee_id validation
+
+	status := task.IN_PROGRESS
+	if req.Body.Status != "" {
+		status = req.Body.Status
+	}
+	priority := task.MEDIUM
+	if req.Body.Priority != "" {
+		priority = req.Body.Priority
+	}
+
+	taskEntity := &task.TaskEntity{
+		Title:       req.Body.Title,
+		Description: req.Body.Description,
+		Status:      status,
+		Priority:    priority,
+		AssigneeID:  1,
+		ProjectID:   req.ProjectId,
+		DueDate:     req.Body.DueDate,
+		CreatedBy:   1,
+	}
+	err := c.repo.addTask(taskEntity)
+	if err != nil {
+		return nil, lc.SendInternalErrorResponse(err, "[project] create task")
+	}
+
+	if errors.Is(err, pg.ErrNoRows) {
+		return nil, errors.New("project not found")
+	}
+	return &CreateTaskResponse{Body: task.ToTaskDTO(*taskEntity)}, nil
 }
 
 func ToProjectDTO(model ProjectEntity) ProjectDTO {

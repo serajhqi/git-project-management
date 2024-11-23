@@ -57,3 +57,8 @@ func (r *Repo) getAllTasks(projectId int64, limit, offset int) ([]task.TaskEntit
 	return tasks, nil
 
 }
+
+func (r *Repo) addTask(task *task.TaskEntity) error {
+	_, err := r.db.Model(task).Returning("*").Insert()
+	return err
+}
