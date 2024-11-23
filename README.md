@@ -11,8 +11,8 @@ On each commit:
 
     commit body
 
-    [task-213] activity title ~~~ activity description ~~~ task-status
-    [timelog] 1h 22m 
+    [task-213]
+    [spent] 1h 22m 
     ```
 
     By using `~` in front of timelog the time span between the last task activity (if any) and the current will be set.  
@@ -23,8 +23,8 @@ On each commit:
 
     commit body
 
-    [task-213] activity title ~~~ activity description ~~~ task-status
-    [timelog] ~
+    [task-213] task-status
+    [spent] ~
     ```
 
 2. Create Task
@@ -36,7 +36,7 @@ On each commit:
 
     Task Statuses:
     - OPEN
-    - DONE
+    - CLOSE
 
 
     to create a new task you need to include the project name.
@@ -47,7 +47,7 @@ On each commit:
     commit body
 
     [proj-23] task title ~~~ task description ~~~ status
-    [timelog] 1h 22m 
+    [spent] 1h 22m 
     ```
 
 
