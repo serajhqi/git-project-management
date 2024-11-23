@@ -36,3 +36,11 @@ func (r *Repo) getAllActivities(taskId int64, limit, offset int) ([]activity.Act
 	return activities, nil
 
 }
+
+func (r *Repo) Update(id int64, task *TaskEntity) (*TaskEntity, error) {
+	_, err := r.db.Model(task).Where("id = ?", id).Returning("*").Update()
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
+}

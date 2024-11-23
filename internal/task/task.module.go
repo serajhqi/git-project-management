@@ -17,8 +17,17 @@ func Setup(api *huma.API, db *pg.DB) {
 		Path:        "/tasks/{id}",
 		Summary:     "get one task",
 		Description: "",
-		Tags:        []string{"tasks"},
+		Tags:        []string{"Task"},
 	}, controller.getOne)
+
+	huma.Register(*api, huma.Operation{
+		OperationID: "set-task-status",
+		Method:      http.MethodPut,
+		Path:        "/tasks/{id}/set-status",
+		Summary:     "set task status",
+		Description: "",
+		Tags:        []string{"Task"},
+	}, controller.setStatus)
 
 	huma.Register(*api, huma.Operation{
 		OperationID: "get-all-task-activities",
@@ -26,7 +35,7 @@ func Setup(api *huma.API, db *pg.DB) {
 		Path:        "/tasks/{id}/activities",
 		Summary:     "get all task activities",
 		Description: "",
-		Tags:        []string{"tasks"},
+		Tags:        []string{"Task"},
 	}, controller.getAllActivities)
 
 }

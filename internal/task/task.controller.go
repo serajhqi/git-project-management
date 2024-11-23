@@ -35,6 +35,26 @@ func (c *Controller) getOne(_ context.Context, req *GetOneRequest) (*GetOneRespo
 	}, nil
 }
 
+func (c *Controller) setStatus(_ context.Context, req *SetTaskStatusRequest) (*SetTaskStatusResponse, error) {
+
+	task, err := c.repo.getByID(req.TaskID)
+	if err != nil {
+		if errors.Is(err, pg.ErrNoRows) {
+			return nil, errors.New("project not found")
+		}
+		return nil, lc.SendInternalErrorResponse(err, "[task] update task")
+	}
+
+	task.Status = req.Body.Status
+	updatedTask, err := c.repo.Update(req.TaskID, task)
+	if err != nil {
+		return nil, lc.SendInternalErrorResponse(err, "[task] update task")
+	}
+	return &SetTaskStatusResponse{
+		Body: ToTaskDTO(*updatedTask),
+	}, nil
+}
+
 func (c *Controller) getAllActivities(_ context.Context, req *GetAllActivitiesRequest) (*GetAllActivitiesResponse, error) {
 	limit := 100
 	offset := 0
@@ -46,7 +66,7 @@ func (c *Controller) getAllActivities(_ context.Context, req *GetAllActivitiesRe
 		offset = req.Offset
 	}
 
-	activities, err := c.repo.getAllActivities(req.TaskId, limit, offset)
+	activities, err := c.repo.getAllActivities(req.TaskID, limit, offset)
 	if err != nil {
 		return nil, lc.SendInternalErrorResponse(err, "[activity] get all")
 	}
