@@ -5,21 +5,27 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"regexp"
+	"git-project-management/internal/project"
+	"git-project-management/internal/task"
 	"strconv"
-	"strings"
+	"time"
 
 	"gitea.com/logicamp/lc"
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/go-pg/pg/v10"
 )
 
 type Controller struct {
-	repo *Repo
+	repo        *Repo
+	taskRepo    *task.Repo
+	projectRepo *project.Repo
 }
 
-func NewController(repo *Repo) *Controller {
+func NewController(repo *Repo, taskRepo *task.Repo, projectRepo *project.Repo) *Controller {
 	return &Controller{
-		repo: repo,
+		repo:        repo,
+		taskRepo:    taskRepo,
+		projectRepo: projectRepo,
 	}
 }
 
@@ -75,191 +81,108 @@ func (c *Controller) create(_ context.Context, req *CreateActivityRequest) (*Cre
 
 	// check whether task exists
 
-	return nil, nil
-}
-
-func ToActivityDTO(model ActivityEntity) ActivityDTO {
-	return ActivityDTO{
-		TaskId:      model.ID,
-		Title:       model.Title,
-		Description: model.Description,
-		Duration:    model.Duration,
-		CreatedBy:   model.CreatedBy,
-		CreateAt:    model.CreatedAt,
+	activity := &ActivityEntity{
+		CommitHash:  hash,
+		Branch:      branch,
+		Title:       parsedData.ActivityTitle,
+		Description: parsedData.ActivityDescription,
+		CreatedBy:   1,
 	}
-}
 
-func ParseFullCommitMessage(fullCommitMessage string) map[string]string {
-	// Create a map to store the extracted values
-	values := make(map[string]string)
+	if len(parsedData.TaskID) > 0 {
+		// error already handled in ParseCommitMessage()
+		taskId, _ := strconv.Atoi(parsedData.TaskID)
+		activity.TaskID = int64(taskId)
 
-	// Split the message into key-value pairs using " | " as the delimiter
-	parts := strings.Split(fullCommitMessage, " ||| ")
-
-	// Iterate over each part and split it into key and value
-	for _, part := range parts {
-		keyValue := strings.SplitN(part, ": ", 2) // Split by ": " into key and value
-		if len(keyValue) == 2 {
-			key := strings.TrimSpace(keyValue[0])
-			value := strings.TrimSpace(keyValue[1])
-			values[key] = value
+		// later we may need to check if the task is owned by current user
+		task_, err := c.taskRepo.GetByID(int64(taskId))
+		if err != nil {
+			if errors.Is(err, pg.ErrNoRows) {
+				return nil, huma.Error404NotFound(fmt.Sprintf("task id %d not found", taskId))
+			}
+			return nil, lc.SendInternalErrorResponse(err, "[activity] get task by id")
 		}
-	}
 
-	return values
-}
+		if len(parsedData.TaskStatus) > 0 {
+			task_.Status = task.TaskStatus(parsedData.TaskStatus)
+			c.taskRepo.Update(task_.ID, task_)
+		}
 
-type ParsedData struct {
-	ActivityTitle       string
-	ActivityDescription string
-	TaskID              string
-	TaskStatus          string
-	ProjectID           string
-	NewTaskTitle        string
-	NewTaskDescription  string
-	NewTaskStatus       string
-	TimeSpentMinutes    int
-}
-
-func ParseCommitMessage(commitMessage string) (ParsedData, error) {
-	var parsed ParsedData
-	lines := strings.Split(commitMessage, "\n")
-
-	// Check if the first line starts with a tag
-	tagRegex := regexp.MustCompile(`^\[(task|proj|spent)-[a-zA-Z0-9]+\]`)
-	if len(lines) > 0 && tagRegex.MatchString(lines[0]) {
-		return parsed, errors.New("error: commit message cannot start with a tag")
-	}
-
-	// Capture the activity title (first line)
-	if len(lines) > 0 {
-		parsed.ActivityTitle = strings.TrimSpace(lines[0])
-	}
-
-	// Capture the activity description (all lines after the title)
-	if len(lines) > 1 {
-		parsed.ActivityDescription = strings.Join(lines[1:], "\n")
-		parsed.ActivityDescription = strings.TrimSpace(parsed.ActivityDescription)
-	}
-
-	spentRegex := regexp.MustCompile(`\[spent\](?:\s*((?:\d+h\s*)?(?:\d+m)?)|\s*~)`)
-	taskRegex := regexp.MustCompile(`\[task-([a-zA-Z0-9]+)\]\s*(\w+)?`)
-	projectRegex := regexp.MustCompile(`\[proj-([a-zA-Z0-9]+)\]\s*([^|]+)?\s*(?:\|\s*([^|]*?)\s*(?:\|\s*(\w+))?)?`)
-
-	validTaskStatuses := map[string]bool{"open": true, "done": true, "in-progress": true}
-
-	// Track occurrences
-	seenTags := map[string]bool{"[spent]": false, "[task]": false, "[proj]": false}
-
-	// Process the lines
-	for _, line := range lines[1:] {
-		line = strings.TrimSpace(line)
-
-		// Parse [spent]
-		if spentMatches := spentRegex.FindStringSubmatch(line); spentMatches != nil {
-			if seenTags["[spent]"] {
-				return parsed, errors.New("error: multiple [spent] tags found")
-			}
-			seenTags["[spent]"] = true
-
-			if strings.Contains(line, "~") && strings.TrimSpace(spentMatches[1]) != "" {
-				return parsed, errors.New("error: [spent] cannot contain both a time format and ~")
-			}
-
-			if strings.Contains(line, "~") {
-				parsed.TimeSpentMinutes = -1
-			} else if spentMatches[1] != "" {
-				parsed.TimeSpentMinutes = convertTimeToMinutes(spentMatches[1])
-			} else {
-				return parsed, errors.New("error: [spent] must be followed by either a time format or ~")
+		if parsedData.TimeSpentMinutes > 0 {
+			activity.Duration = &parsedData.TimeSpentMinutes
+		} else {
+			// get the last activity with the same task id and user id
+			// get the diff from the last createAt and the current one and take it as task duration
+			penultimateActivity, err := c.repo.findByUserIDAndTaskID(1, int64(taskId))
+			if err == nil {
+				duration := int(time.Since(penultimateActivity.CreatedAt).Minutes())
+				activity.Duration = &duration
 			}
 		}
 
-		// Parse [task-XX]
-		if taskMatches := taskRegex.FindStringSubmatch(line); taskMatches != nil {
-			if seenTags["[task]"] {
-				return parsed, errors.New("error: multiple [task] tags found")
+	} else if len(parsedData.ProjectID) > 0 {
+		projectId, _ := strconv.Atoi(parsedData.ProjectID)
+		_, err := c.projectRepo.GetByID(int64(projectId))
+		if err != nil {
+			if errors.Is(err, pg.ErrNoRows) {
+				return nil, huma.Error404NotFound(fmt.Sprintf("project id %d not found", projectId))
 			}
-			if seenTags["[proj]"] {
-				return parsed, errors.New("error: [task] and [proj] tags cannot coexist in the same commit message")
-			}
-			seenTags["[task]"] = true
-
-			_, err := strconv.Atoi(taskMatches[1]) // Alphanumeric Task ID
-			if err != nil {
-				return parsed, errors.New("error: malformed [task-id]")
-			}
-			parsed.TaskID = taskMatches[1]
-
-			if len(taskMatches) > 2 && taskMatches[2] != "" {
-				if !validTaskStatuses[taskMatches[2]] {
-					return parsed, errors.New("error: invalid task status for [task]")
-				}
-				parsed.TaskStatus = taskMatches[2]
-			}
+			return nil, lc.SendInternalErrorResponse(err, "[activity] get project by id")
 		}
 
-		// Parse [proj-XX]
-		if projectMatches := projectRegex.FindStringSubmatch(line); projectMatches != nil {
-			if seenTags["[proj]"] {
-				return parsed, errors.New("error: multiple [proj] tags found")
-			}
-			if seenTags["[task]"] {
-				return parsed, errors.New("error: [task] and [proj] tags cannot coexist in the same commit message")
-			}
-			seenTags["[proj]"] = true
-
-			_, err := strconv.Atoi(projectMatches[1])
-			if err != nil {
-				return parsed, errors.New("error: malformed [proj-id]")
-			}
-			parsed.ProjectID = projectMatches[1]
-
-			if len(projectMatches) > 2 && projectMatches[2] != "" {
-				parsed.NewTaskTitle = strings.TrimSpace(projectMatches[2])
-			} else {
-				return parsed, errors.New("error: [proj] must be followed by a task title")
-			}
-
-			if len(projectMatches) > 3 {
-				parsed.NewTaskDescription = strings.TrimSpace(projectMatches[3])
-			}
-
-			if len(projectMatches) > 4 {
-				parsed.NewTaskStatus = strings.TrimSpace(projectMatches[4])
-			}
+		//create the task
+		taskEntity := &task.TaskEntity{
+			Title:       parsedData.NewTaskTitle,
+			Description: parsedData.ActivityDescription,
+			Status:      task.TaskStatus(parsedData.NewTaskStatus),
+			Priority:    task.MEDIUM,
+			ProjectID:   int64(projectId),
+			AssigneeID:  1,
+			CreatedBy:   1,
 		}
+
+		taskEntity_, err := c.taskRepo.Create(taskEntity)
+		if err != nil {
+			return nil, lc.SendInternalErrorResponse(err, "[activity] create task error")
+		}
+		activity.TaskID = taskEntity_.ID
 	}
 
-	// Final check: ensure either [task] or [proj] exists
-	if !seenTags["[task]"] && !seenTags["[proj]"] {
-		return parsed, errors.New("error: commit message must contain either [task] or [proj] tag")
+	activityEntity, err := c.repo.create(activity)
+	if err != nil {
+		return nil, lc.SendInternalErrorResponse(err, "[activity] create activity error")
 	}
 
-	return parsed, nil
+	return &CreateActivityResponse{
+		Body: IdBody{
+			Id: activityEntity.ID,
+		},
+	}, nil
 }
 
-func convertTimeToMinutes(timeStr string) int {
-	hoursRegex := regexp.MustCompile(`(\d+)h`)
-	minutesRegex := regexp.MustCompile(`(\d+)m`)
+func (c *Controller) getAll(_ context.Context, req *GetAllActivitiesRequest) (*GetAllActivitiesResponse, error) {
 
-	hours := 0
-	minutes := 0
-
-	if hoursMatch := hoursRegex.FindStringSubmatch(timeStr); hoursMatch != nil {
-		h, _ := strconv.Atoi(hoursMatch[1])
-		hours = h
+	limit := 100
+	offset := 0
+	if req.Limit > 0 {
+		limit = req.Limit
 	}
 
-	if minutesMatch := minutesRegex.FindStringSubmatch(timeStr); minutesMatch != nil {
-		m, _ := strconv.Atoi(minutesMatch[1])
-		minutes = m
+	if req.Offset > 0 {
+		offset = req.Offset
 	}
 
-	return hours*60 + minutes
-}
+	activities, err := c.repo.getAll(req.TaskID, limit, offset)
+	if err != nil {
+		return nil, lc.SendInternalErrorResponse(err, "[activity] get all")
+	}
 
-func parseInt(s string) int {
-	result, _ := strconv.Atoi(s)
-	return result
+	var activitiesDTO []ActivityDTO
+	for _, v := range activities {
+		activitiesDTO = append(activitiesDTO, ToActivityDTO(v))
+	}
+
+	return &GetAllActivitiesResponse{
+		Body: activitiesDTO,
+	}, nil
 }

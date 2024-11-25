@@ -21,7 +21,7 @@ func NewController(repo *Repo) *Controller {
 
 func (c *Controller) getOne(_ context.Context, req *GetOneRequest) (*GetOneResponse, error) {
 
-	project, err := c.repo.getByID(req.Id)
+	project, err := c.repo.GetByID(req.Id)
 	if err != nil {
 		return nil, lc.SendInternalErrorResponse(err, "[activity] get all")
 	}

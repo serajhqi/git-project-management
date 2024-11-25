@@ -1,7 +1,6 @@
 package task
 
 import (
-	"git-project-management/internal/activity"
 	"time"
 )
 
@@ -18,6 +17,7 @@ type TaskEntity struct {
 	DueDate     time.Time    `pg:"due_date"`                 // Due date for the task
 	CreatedBy   int64        `pg:"created_by"`               // User ID who created the task
 	CreatedAt   time.Time    `pg:"created_at,default:now()"` // Timestamp when the task was created
+	UpdatedAt   time.Time    `pg:"updated_at"`               // Timestamp when the task was created
 }
 
 // Get All ---
@@ -50,6 +50,7 @@ type TaskDTO struct {
 	DueDate     time.Time    `json:"due_date,omitempty"`
 	CreatedBy   int64        `json:"created_by"`
 	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
 }
 
 // ---
@@ -59,17 +60,6 @@ type GetOneRequest struct {
 
 type GetOneResponse struct {
 	Body TaskDTO
-}
-
-// ---
-
-type GetAllActivitiesRequest struct {
-	Limit  int   `query:"limit"`
-	Offset int   `query:"offset"`
-	TaskID int64 `path:"id"`
-}
-type GetAllActivitiesResponse struct {
-	Body []activity.ActivityDTO
 }
 
 // ---

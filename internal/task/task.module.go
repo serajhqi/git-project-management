@@ -29,13 +29,4 @@ func Setup(api *huma.API, db *pg.DB) {
 		Tags:        []string{"Task"},
 	}, controller.setStatus)
 
-	huma.Register(*api, huma.Operation{
-		OperationID: "get-all-task-activities",
-		Method:      http.MethodGet,
-		Path:        "/tasks/{id}/activities",
-		Summary:     "get all task activities",
-		Description: "",
-		Tags:        []string{"Task"},
-	}, controller.getAllActivities)
-
 }

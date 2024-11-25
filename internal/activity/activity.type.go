@@ -5,7 +5,7 @@ import "time"
 type ActivityEntity struct {
 	tableName   struct{}  `pg:"activity"`
 	ID          int64     `pg:"id,pk"`                    // Unique identifier
-	TaskId      int64     `pg:"task_id,notnull"`          // ID of the associated task
+	TaskID      int64     `pg:"task_id,notnull"`          // ID of the associated task
 	CommitHash  string    `pg:"commit_hash"`              // ID of the associated task
 	Branch      string    `pg:"branch"`                   // ID of the associated task
 	Title       string    `pg:"title,notnull"`            // Action performed (e.g., "Worked On sth")
@@ -16,7 +16,7 @@ type ActivityEntity struct {
 }
 
 type IdBody struct {
-	Id int `json:"id"`
+	Id int64 `json:"id"`
 }
 
 // Create ---
@@ -59,3 +59,14 @@ type GetOneRequest struct {
 type GetOneResponse struct {
 	Body ActivityDTO
 }
+
+type GetAllActivitiesRequest struct {
+	Limit  int   `query:"limit"`
+	Offset int   `query:"offset"`
+	TaskID int64 `query:"task_id"`
+}
+type GetAllActivitiesResponse struct {
+	Body []ActivityDTO
+}
+
+// ---

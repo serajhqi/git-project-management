@@ -22,7 +22,7 @@ func (r *Repo) Create(project *ProjectEntity) error {
 }
 
 // Get a project by ID
-func (r *Repo) getByID(id int64) (*ProjectEntity, error) {
+func (r *Repo) GetByID(id int64) (*ProjectEntity, error) {
 	project := &ProjectEntity{}
 	err := r.db.Model(project).Where("id = ?", id).First()
 	if err != nil {
