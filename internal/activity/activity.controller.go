@@ -94,7 +94,7 @@ func (c *Controller) create(_ context.Context, req *CreateActivityRequest) (*Cre
 		taskId, _ := strconv.Atoi(parsedData.TaskID)
 		activity.TaskID = int64(taskId)
 
-		// later we may need to check if the task is owned by current user
+		// TODO later we may need to check if the task is owned by current user
 		task_, err := c.taskRepo.GetByID(int64(taskId))
 		if err != nil {
 			if errors.Is(err, pg.ErrNoRows) {
@@ -113,7 +113,7 @@ func (c *Controller) create(_ context.Context, req *CreateActivityRequest) (*Cre
 		} else {
 			// get the last activity with the same task id and user id
 			// get the diff from the last createAt and the current one and take it as task duration
-			penultimateActivity, err := c.repo.findByUserIDAndTaskID(1, int64(taskId))
+			penultimateActivity, err := c.repo.findByUserID(1)
 			if err == nil {
 				duration := int(time.Since(penultimateActivity.CreatedAt).Minutes())
 				activity.Duration = &duration

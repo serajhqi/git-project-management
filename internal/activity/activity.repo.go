@@ -49,3 +49,12 @@ func (r *Repo) getAll(taskID int64, limit, offset int) ([]ActivityEntity, error)
 	return activities, nil
 
 }
+
+func (r *Repo) findByUserID(userID int64) (*ActivityEntity, error) {
+	project := &ActivityEntity{}
+	err := r.db.Model(project).Where("created_by = ?", userID).Order("created_at DESC").First()
+	if err != nil {
+		return nil, err
+	}
+	return project, nil
+}
