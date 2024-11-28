@@ -6,6 +6,7 @@ import (
 	"git-project-management/config"
 	app "git-project-management/internal"
 	"log"
+	"time"
 
 	"gitea.com/logicamp/lc"
 	"github.com/danielgtaylor/huma/v2"
@@ -13,6 +14,10 @@ import (
 	"github.com/go-pg/pg/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func main() {
@@ -51,6 +56,32 @@ func main() {
 	}
 	// ------------------------
 
+	uri := "mongodb://localhost:27017"
+
+	// Create a new client and connect to the server
+	client, err := mongo.Connect(options.Client().ApplyURI(uri))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	defer client.Disconnect(ctx)
+
+	// Select database and collection
+	database := client.Database("w-mohamadkhani-bazargam-6628c03f-56c061745a-6f0314")
+	collection := database.Collection("activity")
+
+	// Define a filter (empty filter counts all documents)
+	filter := bson.M{}
+
+	// Get the count of documents
+	count, err := collection.CountDocuments(ctx, filter)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Number of documents in the collection: %d\n", count)
 	app.Setup(&api, db)
 
 	log.Fatal(fiberApp.Listen(fmt.Sprintf(":%s", config.PORT)))
